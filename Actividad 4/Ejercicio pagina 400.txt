@@ -1,0 +1,189 @@
+import tkinter as tk
+from tkinter import ttk
+from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
+
+# ================== LÓGICA ==================
+class PruebaExcepciones:
+
+    def __init__(self, numerador, denominador):
+        self.numerador = numerador
+        self.denominador = denominador
+
+    def ejecutar_primer_bloque(self):
+        resultados = []
+
+        try:
+            resultados.append("Ingresando al primer try")
+
+            # División con valores del usuario
+            cociente = self.numerador / self.denominador
+
+            resultados.append(f"Resultado de la división = {cociente}")
+
+        except ZeroDivisionError:
+            resultados.append("División por cero")
+
+        except TypeError:
+            resultados.append("Tipo de dato inválido")
+
+        finally:
+            resultados.append("Ingresando al primer finally")
+
+        return resultados
+
+    def ejecutar_segundo_bloque(self):
+        resultados = []
+
+        try:
+            resultados.append("Ingresando al segundo try")
+
+            objeto = None
+            objeto.to_string()
+
+            resultados.append("Imprimiendo objeto")
+
+        except ZeroDivisionError:
+            resultados.append("División por cero")
+
+        except Exception:
+            resultados.append("Ocurrió una excepción")
+
+        finally:
+            resultados.append("Ingresando al segundo finally")
+
+        return resultados
+
+# ================== GUI ==================
+class VentanaExcepciones:
+
+    def __init__(self):
+        self.ventana = tk.Tk()
+        self.ventana.title("Prueba de Excepciones")
+        self.ventana.geometry("600x550")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # Título
+        ttk.Label(
+            self.ventana,
+            text="⚠ Simulador de Excepciones (División)",
+            font=("Arial", 16)
+        ).pack(pady=10)
+
+        # Frame entradas
+        frame_entradas = ttk.Frame(self.ventana)
+        frame_entradas.pack(pady=10)
+
+        # Numerador
+        ttk.Label(frame_entradas, text="Numerador:").grid(row=0, column=0, padx=5, pady=5)
+        self.entry_numerador = ttk.Entry(frame_entradas, width=15)
+        self.entry_numerador.grid(row=0, column=1, padx=5)
+
+        # Denominador
+        ttk.Label(frame_entradas, text="Denominador:").grid(row=1, column=0, padx=5, pady=5)
+        self.entry_denominador = ttk.Entry(frame_entradas, width=15)
+        self.entry_denominador.grid(row=1, column=1, padx=5)
+
+        # Área de texto
+        self.area_texto = ScrolledText(self.ventana, width=65, height=18)
+        self.area_texto.pack(pady=10)
+
+        # Frame botones
+        frame_botones = ttk.Frame(self.ventana)
+        frame_botones.pack(pady=10)
+
+        # Botón ejecutar
+        ttk.Button(
+            frame_botones,
+            text="Calcular",
+            command=self.ejecutar
+        ).grid(row=0, column=0, padx=10)
+
+        # Botón limpiar
+        ttk.Button(
+            frame_botones,
+            text="Limpiar",
+            command=self.limpiar
+        ).grid(row=0, column=1, padx=10)
+
+        self.ventana.mainloop()
+
+    # ================== FUNCIONES ==================
+    def ejecutar(self):
+        try:
+            # Obtener valores de entradas
+            numerador = self.entry_numerador.get()
+            denominador = self.entry_denominador.get()
+
+            # Validar campos vacíos
+            if not numerador or not denominador:
+                messagebox.showerror(
+                    "Error",
+                    "Debe ingresar numerador y denominador."
+                )
+                return
+
+            # Convertir a números
+            numerador = float(numerador)
+            denominador = float(denominador)
+
+            # Crear objeto
+            prueba = PruebaExcepciones(numerador, denominador)
+
+            # PRIMER BLOQUE
+            self.area_texto.insert(tk.END, "========== PRIMER BLOQUE ==========\n")
+            resultados1 = prueba.ejecutar_primer_bloque()
+
+            for linea in resultados1:
+                self.area_texto.insert(tk.END, linea + "\n")
+
+                if linea == "División por cero":
+                    messagebox.showerror(
+                        "ArithmeticException",
+                        "Se intentó dividir entre cero."
+                    )
+
+                elif linea == "Tipo de dato inválido":
+                    messagebox.showerror(
+                        "TypeError",
+                        "Los datos ingresados no son válidos."
+                    )
+
+            # SEGUNDO BLOQUE
+            self.area_texto.insert(tk.END, "\n========== SEGUNDO BLOQUE  (Prueba de objeto nulo) ==========\n")
+            resultados2 = prueba.ejecutar_segundo_bloque()
+
+            for linea in resultados2:
+                self.area_texto.insert(tk.END, linea + "\n")
+
+                if linea == "Ocurrió una excepción":
+                    messagebox.showwarning(
+                        "Exception",
+                        "Se intentó usar un objeto nulo."
+                    )
+
+            self.area_texto.insert(tk.END, "\n")
+
+        except ValueError:
+            messagebox.showerror(
+                "ValueError",
+                "Ingrese únicamente valores numéricos."
+            )
+
+    def limpiar(self):
+        # Limpiar área de resultados
+        self.area_texto.delete(1.0, tk.END)
+
+        # Limpiar campos de entrada
+        self.entry_numerador.delete(0, tk.END)
+        self.entry_denominador.delete(0, tk.END)
+
+        # Regresar cursor al primer campo
+        self.entry_numerador.focus()
+
+# ================== MAIN ==================
+if __name__ == "__main__":
+    VentanaExcepciones()
