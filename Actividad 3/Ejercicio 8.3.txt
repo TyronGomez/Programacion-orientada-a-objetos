@@ -1,0 +1,357 @@
+! pip install pillow
+import math
+import tkinter as tk
+from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
+
+
+# ================== CARGAR IMAGENES ================
+
+def cargar_imagen(ruta, tamaño=(200, 200)):
+    try:
+        img = Image.open(ruta)
+        img = img.resize(tamaño)
+        return ImageTk.PhotoImage(img)
+    except Exception:
+        return None  # Si falla, no rompe el programa
+
+# ================== CLASE BASE ==================
+class Figura:
+    def calcular_volumen(self):
+        raise NotImplementedError("Método no implementado")
+
+    def calcular_superficie(self):
+        raise NotImplementedError("Método no implementado")
+
+
+# ================== CILINDRO ==================
+class Cilindro(Figura):
+    def __init__(self, radio, altura):
+        self.radio = radio
+        self.altura = altura
+
+    def calcular_volumen(self):
+        return math.pi * (self.radio ** 2) * self.altura
+
+    def calcular_superficie(self):
+        return 2 * math.pi * self.radio * (self.radio + self.altura)
+
+
+# ================== ESFERA ==================
+class Esfera(Figura):
+    def __init__(self, radio):
+        self.radio = radio
+
+    def calcular_volumen(self):
+        return (4/3) * math.pi * (self.radio ** 3)
+
+    def calcular_superficie(self):
+        return 4 * math.pi * (self.radio ** 2)
+
+
+# ================== PIRÁMIDE ==================
+class Piramide(Figura):
+    def __init__(self, base, altura, apotema):
+        self.base = base
+        self.altura = altura
+        self.apotema = apotema
+
+    def calcular_volumen(self):
+        return (self.base ** 2 * self.altura) / 3
+
+    def calcular_superficie(self):
+        area_base = self.base ** 2
+        area_lateral = 2 * self.base * self.apotema
+        return area_base + area_lateral
+    
+
+# ================== FUNCIONES DE NAVEGACIÓN ==================
+class Funcion_Principal:
+    @staticmethod
+    def abrir_cilindro():
+        VentanaCilindro()
+
+    @staticmethod
+    def abrir_esfera():
+        VentanaEsfera()
+
+    @staticmethod
+    def abrir_piramide():
+        VentanaPiramide()
+
+
+# ================== VENTANA PRINCIPAL ==================
+
+ventana = tk.Tk()
+ventana.title("Figuras Geométricas")
+ventana.geometry("300x300")
+
+style = ttk.Style()
+style.theme_use("clam")
+
+ttk.Label(ventana, text="Seleccione una figura", font=("Arial", 14)).pack(pady=20)
+
+ttk.Button(ventana, text="🔵 Cilindro", width=20, command=Funcion_Principal.abrir_cilindro).pack(pady=5)
+ttk.Button(ventana, text="⚪ Esfera", width=20, command=Funcion_Principal.abrir_esfera).pack(pady=5)
+ttk.Button(ventana, text="🔺 Pirámide", width=20, command=Funcion_Principal.abrir_piramide).pack(pady=5)
+
+
+# ================== VENTANA CILINDRO ==================
+class VentanaCilindro:
+
+    def __init__(self):
+        self.ventana = tk.Toplevel()
+        self.ventana.title("Cilindro")
+        self.ventana.geometry("420x380")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # Título
+        ttk.Label(self.ventana, text="🔵 Cilindro", font=("Arial", 16)).pack(pady=10)
+
+        # CONTENEDOR PRINCIPAL
+        frame_contenido = ttk.Frame(self.ventana)
+        frame_contenido.pack(pady=10)
+
+        # COLUMNA IZQUIERDA (FORMULARIO)
+        # Entradas
+        frame_form = ttk.Frame(frame_contenido)
+        frame_form.grid(row=0, column=0, padx=15)
+
+        ttk.Label(frame_form, text="Radio [cm]:").grid(row=0, column=0, pady=5, sticky="w")
+        self.entry_radio = ttk.Entry(frame_form, width=10)
+        self.entry_radio.grid(row=0, column=1)
+
+        ttk.Label(frame_form, text="Altura [cm]:").grid(row=1, column=0, pady=5, sticky="w")
+        self.entry_altura = ttk.Entry(frame_form, width=10)
+        self.entry_altura.grid(row=1, column=1)
+
+        # COLUMNA DERECHA (IMAGEN)            
+        self.imagen_cilindro = cargar_imagen("Cilindro.gif")
+
+        if self.imagen_cilindro:
+            ttk.Label(frame_contenido, image=self.imagen_cilindro)\
+                .grid(row=0, column=1, padx=20)
+        else:
+            ttk.Label(frame_contenido, text="(Sin imagen)")\
+                .grid(row=0, column=1, padx=20)
+
+        # Botón
+        ttk.Button(self.ventana, text="Calcular", command=self.calcular).pack(pady=10)
+
+        # Resultados
+        self.lbl_volumen = ttk.Label(self.ventana, text="Volumen = ")
+        self.lbl_volumen.pack()
+
+        self.lbl_superficie = ttk.Label(self.ventana, text="Superficie = ")
+        self.lbl_superficie.pack()
+
+
+    def calcular(self):
+        try:
+            radio = self.entry_radio.get()
+            altura = self.entry_altura.get()
+
+            # Validar vacíos
+            if not radio or not altura:
+                messagebox.showerror("Error", "Debe ingresar todos los valores.")
+                return
+
+            radio = float(radio)
+            altura = float(altura)
+
+            # Validar negativos
+            if radio <= 0 or altura <= 0:
+                messagebox.showerror("Error", "Los valores deben ser positivos.")
+                return
+
+            # Crear objeto
+            cilindro = Cilindro(radio, altura)
+
+            # Mostrar resultados
+            self.lbl_volumen.config(
+                text=f"Volumen = {cilindro.calcular_volumen():.2f}"
+            )
+            self.lbl_superficie.config(
+                text=f"Superficie = {cilindro.calcular_superficie():.2f}"
+            )
+
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese valores numéricos.")
+
+# ================== VENTANA ESFERA ==================
+
+class VentanaEsfera:
+
+    def __init__(self):
+        self.ventana = tk.Toplevel()
+        self.ventana.title("Esfera")
+        self.ventana.geometry("420x380")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # Título
+        ttk.Label(self.ventana, text="⚪ Esfera", font=("Arial", 16)).pack(pady=10)
+
+        # CONTENEDOR PRINCIPAL
+        frame_contenido = ttk.Frame(self.ventana)
+        frame_contenido.pack(pady=10)
+
+        # COLUMNA IZQUIERDA (FORMULARIO)
+        frame_form = ttk.Frame(frame_contenido)
+        frame_form.grid(row=0, column=0, padx=15)
+
+        # Entrada
+        ttk.Label(frame_form, text="Radio [cm]:").grid(row=0, column=0, pady=5, sticky="w")
+        self.entry_radio = ttk.Entry(frame_form, width=10)
+        self.entry_radio.grid(row=0, column=1)
+
+        # COLUMNA DERECHA (IMAGEN)            
+        self.imagen = cargar_imagen("Esfera.gif")
+
+        if self.imagen:
+            ttk.Label(frame_contenido, image=self.imagen)\
+                .grid(row=0, column=1, padx=20)
+        else:
+            ttk.Label(frame_contenido, text="(Sin imagen)")\
+                .grid(row=0, column=1, padx=20)
+
+        # Botón
+        ttk.Button(self.ventana, text="Calcular", command=self.calcular).pack(pady=10)
+
+        # Resultados
+        self.lbl_volumen = ttk.Label(self.ventana, text="Volumen = ")
+        self.lbl_volumen.pack()
+
+        self.lbl_superficie = ttk.Label(self.ventana, text="Superficie = ")
+        self.lbl_superficie.pack()
+
+
+    def calcular(self):
+        try:
+            radio = self.entry_radio.get()
+
+            # Validar vacío
+            if not radio:
+                messagebox.showerror("Error", "Debe ingresar el radio.")
+                return
+
+            radio = float(radio)
+
+            # Validar positivo
+            if radio <= 0:
+                messagebox.showerror("Error", "El radio debe ser positivo.")
+                return
+
+            # Crear objeto
+            esfera = Esfera(radio)
+
+            # Mostrar resultados
+            self.lbl_volumen.config(
+                text=f"Volumen = {esfera.calcular_volumen():.2f}"
+            )
+            self.lbl_superficie.config(
+                text=f"Superficie = {esfera.calcular_superficie():.2f}"
+            )
+
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese un valor numérico.")
+
+# ================== VENTANA PIRAMIDE ==================
+
+class VentanaPiramide:
+
+    def __init__(self):
+        self.ventana = tk.Toplevel()
+        self.ventana.title("Pirámide")
+        self.ventana.geometry("420x380")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # ================== TÍTULO ==================
+        ttk.Label(self.ventana, text="🔺 Pirámide", font=("Arial", 16)).pack(pady=10)
+
+        # ================== CONTENEDOR PRINCIPAL ==================
+        frame_contenido = ttk.Frame(self.ventana)
+        frame_contenido.pack(pady=10)
+
+        # ================== COLUMNA IZQUIERDA (FORMULARIO) ==================
+        frame_form = ttk.Frame(frame_contenido)
+        frame_form.grid(row=0, column=0, padx=15)
+
+        ttk.Label(frame_form, text="Base [cm]:").grid(row=0, column=0, pady=5, sticky="w")
+        self.entry_base = ttk.Entry(frame_form, width=10)
+        self.entry_base.grid(row=0, column=1)
+
+        ttk.Label(frame_form, text="Altura [cm]:").grid(row=1, column=0, pady=5, sticky="w")
+        self.entry_altura = ttk.Entry(frame_form, width=10)
+        self.entry_altura.grid(row=1, column=1)
+
+        ttk.Label(frame_form, text="Apotema [cm]:").grid(row=2, column=0, pady=5, sticky="w")
+        self.entry_apotema = ttk.Entry(frame_form, width=10)
+        self.entry_apotema.grid(row=2, column=1)
+
+        # ================== COLUMNA DERECHA (IMAGEN) ==================
+            
+        self.imagen_piramide = cargar_imagen("Piramide.gif")
+
+        if self.imagen_piramide:
+            ttk.Label(frame_contenido, image=self.imagen_piramide)\
+                .grid(row=0, column=1, padx=20)
+        else:
+            ttk.Label(frame_contenido, text="(Sin imagen)")\
+                .grid(row=0, column=1, padx=20)
+
+        # ================== BOTÓN ==================
+        ttk.Button(self.ventana, text="Calcular", command=self.calcular)\
+            .pack(pady=10)
+
+        # ================== RESULTADOS ==================
+        self.lbl_volumen = ttk.Label(self.ventana, text="Volumen = ")
+        self.lbl_volumen.pack()
+
+        self.lbl_superficie = ttk.Label(self.ventana, text="Superficie = ")
+        self.lbl_superficie.pack()
+
+
+    def calcular(self):
+        try:
+            base = self.entry_base.get()
+            altura = self.entry_altura.get()
+            apotema = self.entry_apotema.get()
+
+            # Validar vacíos
+            if not base or not altura or not apotema:
+                messagebox.showerror("Error", "Debe ingresar todos los valores.")
+                return
+
+            base = float(base)
+            altura = float(altura)
+            apotema = float(apotema)
+
+            # Validar positivos
+            if base <= 0 or altura <= 0 or apotema <= 0:
+                messagebox.showerror("Error", "Los valores deben ser positivos.")
+                return
+
+            # Crear objeto
+            piramide = Piramide(base, altura, apotema)
+
+            # Mostrar resultados
+            self.lbl_volumen.config(
+                text=f"Volumen = {piramide.calcular_volumen():.2f}"
+            )
+            self.lbl_superficie.config(
+                text=f"Superficie = {piramide.calcular_superficie():.2f}"
+            )
+
+        except ValueError:
+            messagebox.showerror("Error", "Ingrese valores numéricos.")
+
+ventana.mainloop()
