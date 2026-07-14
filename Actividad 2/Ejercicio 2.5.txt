@@ -1,0 +1,64 @@
+from enum import Enum
+
+# Enumeración para el tipo de cuenta
+class TipoCuenta(Enum):
+    AHORROS = "Ahorros"
+    CORRIENTE = "Corriente"
+
+
+class CuentaBancaria:
+
+    def __init__(self, nombres_titular, apellidos_titular, numero_cuenta, tipo_cuenta):
+        self.nombres_titular = nombres_titular
+        self.apellidos_titular = apellidos_titular
+        self.numero_cuenta = numero_cuenta
+        self.tipo_cuenta = tipo_cuenta
+        self.saldo = 0  # Saldo inicial en cero
+
+    # Método para imprimir información de la cuenta
+    def imprimir(self):
+        print("Nombres del titular =", self.nombres_titular)
+        print("Apellidos del titular =", self.apellidos_titular)
+        print("Número de cuenta =", self.numero_cuenta)
+        print("Tipo de cuenta =", self.tipo_cuenta.value)
+        print("Saldo =", self.saldo)
+
+    # Método para consultar saldo
+    def consultar_saldo(self):
+        print("El saldo actual es =", self.saldo)
+        return self.saldo
+
+    # Método para consignar dinero
+    def consignar(self, valor):
+        if valor > 0:
+            self.saldo += valor
+            print(f"Se ha consignado ${valor}. Nuevo saldo = ${self.saldo}")
+            return True
+        else:
+            print("El valor a consignar debe ser mayor que cero.")
+            return False
+
+    # Método para retirar dinero
+    def retirar(self, valor):
+        if valor > 0 and valor <= self.saldo:
+            self.saldo -= valor
+            print(f"Se ha retirado ${valor}. Nuevo saldo = ${self.saldo}")
+            return True
+        else:
+            print("El valor a retirar debe ser menor o igual al saldo actual.")
+            return False
+
+
+# ================== PRUEBA ==================
+if __name__ == "__main__":
+    cuenta = CuentaBancaria("Pedro", "Pérez", 123456789, TipoCuenta.AHORROS)
+
+    cuenta.imprimir()
+    print("-----------")
+
+    cuenta.consignar(200000)
+    cuenta.consignar(300000)
+    cuenta.retirar(400000)
+    print("-----------")
+
+    cuenta.consultar_saldo()
