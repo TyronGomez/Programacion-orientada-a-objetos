@@ -1,0 +1,21 @@
+import math
+
+class Numero:
+    def __init__(self, valor):
+        self.valor = valor
+
+    def calcular_cuadrado(self):
+        return math.pow(self.valor, 2)
+
+    def calcular_cubo(self):
+        return math.pow(self.valor, 3)
+
+
+# Bloque principal
+if __name__ == "__main__":
+    n = float(input("Ingrese un número: "))
+
+    numero = Numero(n)
+
+    print(f"El cuadrado es: {numero.calcular_cuadrado()}")
+    print(f"El cubo es: {numero.calcular_cubo()}")

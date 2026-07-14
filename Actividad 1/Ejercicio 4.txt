@@ -1,0 +1,26 @@
+# Definimos las funciones de cálculo (lo que en Java estaba en la clase Edades)
+class Edades: 
+  @staticmethod
+  def calcular_edalber(edjuan):
+  # En Python, la división con siempre devuelve un decimal (float)
+   return (2 * edjuan) / 3
+
+  @staticmethod
+  def calcular_edana (edjuan):
+    return (4* edjuan) / 3
+
+  @staticmethod
+  def calcular_edmama (edjuan, edalber, edana):
+    return edjuan + edalber + edana
+
+# Bloque principal (equivalente al main de Java) 
+if __name__ == '__main__':
+  edjuan= 9.0
+  
+  # Llamamos a los métodos de la clase Edades
+  edalber = Edades.calcular_edalber(edjuan)
+  edana =   Edades.calcular_edana (edjuan)
+  edmama =  Edades.calcular_edmama (edjuan, edalber, edana)
+  
+  # Resultado formateado
+  print (f"Las edades son: Alberto = {edalber: .2f}, Juan = {edjuan}, Ana = {edana: .2f}, Mama = {edmama: .2f}")

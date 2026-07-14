@@ -1,0 +1,32 @@
+# Importamos la clase math para la potencia
+import math
+
+class Calculadora: # Creamos la clase Calculadora y sus metodos
+    def __init__(self, x, y): # Se guardan los valores ingresados
+        self.x = x
+        self.y = y
+        self.suma = 0
+
+    def sumar_x(self):
+        self.suma += self.x
+
+    def actualizar_x(self):
+        self.x = self.x + math.pow(self.y, 2)
+
+    def sumar_x_div_y(self):
+        self.suma += (self.x / self.y)
+
+    def mostrar_resultados(self):
+        print(f"El valor de x es : {self.x}")
+        print(f"El valor de y es : {self.y}")
+        print(f"El valor de la suma es : {self.suma}")
+
+
+# Bloque principal (main)
+if __name__ == "__main__":
+    calc = Calculadora(20, 40) # Se invoca la clase con x=20, y=40
+
+    calc.sumar_x()
+    calc.actualizar_x()
+    calc.sumar_x_div_y()
+    calc.mostrar_resultados()
