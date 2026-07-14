@@ -1,0 +1,313 @@
+import math
+import tkinter as tk
+from tkinter import ttk, messagebox
+from tkinter.scrolledtext import ScrolledText
+
+
+# =========================================================
+# CLASE BASE (HERENCIA / POLIMORFISMO)
+# =========================================================
+class Operacion:
+    def calcular(self, valor):
+        raise NotImplementedError(
+            "Este método debe ser implementado por las subclases."
+        )
+
+
+# =========================================================
+# SUBCLASE LOGARITMO NEPERIANO
+# =========================================================
+class LogaritmoNeperiano(Operacion):
+
+    def calcular(self, valor):
+        if valor <= 0:
+            raise ArithmeticError(
+                "El valor debe ser mayor que cero para calcular el logaritmo."
+            )
+
+        return math.log(valor)
+
+
+# =========================================================
+# SUBCLASE RAÍZ CUADRADA
+# =========================================================
+class RaizCuadrada(Operacion):
+
+    def calcular(self, valor):
+        if valor < 0:
+            raise ArithmeticError(
+                "El valor debe ser positivo para calcular la raíz cuadrada."
+            )
+
+        return math.sqrt(valor)
+
+
+# =========================================================
+# SUBCLASE POTENCIA
+# =========================================================
+class Potencia(Operacion):
+
+    def calcular(self, valor):
+        return valor ** 2
+
+
+# =========================================================
+# SUBCLASE VALOR ABSOLUTO
+# =========================================================
+class ValorAbsoluto(Operacion):
+
+    def calcular(self, valor):
+        return abs(valor)
+
+
+# =========================================================
+# CLASE CONTROLADORA
+# =========================================================
+class CalculadoraNumericaAvanzada:
+
+    def __init__(self):
+        self.logaritmo = LogaritmoNeperiano()
+        self.raiz = RaizCuadrada()
+        self.potencia = Potencia()
+        self.valor_absoluto = ValorAbsoluto()
+
+    def calcular_todo(self, valor):
+        resultados = {}
+
+        # Logaritmo
+        try:
+            resultados["logaritmo"] = (
+                f"{self.logaritmo.calcular(valor):.4f}"
+            )
+        except Exception as e:
+            resultados["logaritmo"] = f"Error: {e}"
+
+        # Raíz
+        try:
+            resultados["raiz"] = (
+                f"{self.raiz.calcular(valor):.4f}"
+            )
+        except Exception as e:
+            resultados["raiz"] = f"Error: {e}"
+
+        # Potencia
+        resultados["potencia"] = (
+            f"{self.potencia.calcular(valor):.4f}"
+        )
+
+        # Valor absoluto
+        resultados["absoluto"] = (
+            f"{self.valor_absoluto.calcular(valor):.4f}"
+        )
+
+        return resultados
+
+
+# =========================================================
+# INTERFAZ GRÁFICA
+# =========================================================
+class VentanaCalculadoraAvanzada:
+
+    def __init__(self):
+        self.calculadora = CalculadoraNumericaAvanzada()
+
+        self.ventana = tk.Tk()
+        self.ventana.title("Calculadora Numérica Avanzada")
+        self.ventana.geometry("700x700")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # =================================================
+        # TÍTULO
+        # =================================================
+        ttk.Label(
+            self.ventana,
+            text="📐 Calculadora Numérica Avanzada",
+            font=("Arial", 18)
+        ).pack(pady=15)
+
+        ttk.Label(
+            self.ventana,
+            text="Operaciones: Logaritmo | Raíz | Potencia | Valor Absoluto",
+            font=("Arial", 10)
+        ).pack()
+
+        # =================================================
+        # ENTRADA
+        # =================================================
+        frame_entrada = ttk.Frame(self.ventana)
+        frame_entrada.pack(pady=20)
+
+        ttk.Label(
+            frame_entrada,
+            text="Ingrese un valor numérico:"
+        ).grid(row=0, column=0, padx=10)
+
+        self.entry_valor = ttk.Entry(
+            frame_entrada,
+            width=20
+        )
+        self.entry_valor.grid(row=0, column=1)
+
+        # =================================================
+        # BOTONES
+        # =================================================
+        frame_botones = ttk.Frame(self.ventana)
+        frame_botones.pack(pady=15)
+
+        ttk.Button(
+            frame_botones,
+            text="Calcular",
+            command=self.calcular
+        ).grid(row=0, column=0, padx=15)
+
+        ttk.Button(
+            frame_botones,
+            text="Limpiar",
+            command=self.limpiar
+        ).grid(row=0, column=1, padx=15)
+
+        # =================================================
+        # RESULTADOS
+        # =================================================
+        self.lbl_logaritmo = ttk.Label(
+            self.ventana,
+            text="Logaritmo neperiano = "
+        )
+        self.lbl_logaritmo.pack(pady=5)
+
+        self.lbl_raiz = ttk.Label(
+            self.ventana,
+            text="Raíz cuadrada = "
+        )
+        self.lbl_raiz.pack(pady=5)
+
+        self.lbl_potencia = ttk.Label(
+            self.ventana,
+            text="Potencia (x²) = "
+        )
+        self.lbl_potencia.pack(pady=5)
+
+        self.lbl_absoluto = ttk.Label(
+            self.ventana,
+            text="Valor absoluto = "
+        )
+        self.lbl_absoluto.pack(pady=5)
+
+        # =================================================
+        # HISTORIAL
+        # =================================================
+        ttk.Label(
+            self.ventana,
+            text="📋 Historial de cálculos:"
+        ).pack(pady=10)
+
+        self.historial = ScrolledText(
+            self.ventana,
+            width=75,
+            height=15
+        )
+        self.historial.pack(pady=10)
+
+        self.ventana.mainloop()
+
+    # =====================================================
+    # FUNCIÓN CALCULAR
+    # =====================================================
+    def calcular(self):
+        try:
+            valor = self.entry_valor.get()
+
+            # Validar vacío
+            if not valor:
+                messagebox.showerror(
+                    "Error",
+                    "Debe ingresar un valor numérico."
+                )
+                return
+
+            valor = float(valor)
+
+            resultados = self.calculadora.calcular_todo(valor)
+
+            # Mostrar en labels
+            self.lbl_logaritmo.config(
+                text=f"Logaritmo neperiano = {resultados['logaritmo']}"
+            )
+
+            self.lbl_raiz.config(
+                text=f"Raíz cuadrada = {resultados['raiz']}"
+            )
+
+            self.lbl_potencia.config(
+                text=f"Potencia (x²) = {resultados['potencia']}"
+            )
+
+            self.lbl_absoluto.config(
+                text=f"Valor absoluto = {resultados['absoluto']}"
+            )
+
+            # Historial
+            self.historial.insert(
+                tk.END,
+                f"Valor ingresado: {valor}\n"
+                f"Logaritmo: {resultados['logaritmo']}\n"
+                f"Raíz: {resultados['raiz']}\n"
+                f"Potencia: {resultados['potencia']}\n"
+                f"Valor absoluto: {resultados['absoluto']}\n"
+                f"{'-'*55}\n"
+            )
+
+            # Alertas visuales
+            if "Error" in resultados["logaritmo"]:
+                messagebox.showwarning(
+                    "Logaritmo",
+                    resultados["logaritmo"]
+                )
+
+            if "Error" in resultados["raiz"]:
+                messagebox.showwarning(
+                    "Raíz cuadrada",
+                    resultados["raiz"]
+                )
+
+        except ValueError:
+            messagebox.showerror(
+                "InputMismatchException",
+                "Debe ingresar un valor numérico válido."
+            )
+
+    # =====================================================
+    # FUNCIÓN LIMPIAR
+    # =====================================================
+    def limpiar(self):
+        self.entry_valor.delete(0, tk.END)
+
+        self.lbl_logaritmo.config(
+            text="Logaritmo neperiano = "
+        )
+
+        self.lbl_raiz.config(
+            text="Raíz cuadrada = "
+        )
+
+        self.lbl_potencia.config(
+            text="Potencia (x²) = "
+        )
+
+        self.lbl_absoluto.config(
+            text="Valor absoluto = "
+        )
+
+        self.historial.delete(1.0, tk.END)
+
+        self.entry_valor.focus()
+
+
+# =========================================================
+# MAIN
+# =========================================================
+if __name__ == "__main__":
+    VentanaCalculadoraAvanzada()
