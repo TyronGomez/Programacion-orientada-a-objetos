@@ -1,0 +1,21 @@
+import math
+
+class Circulo:
+    def __init__(self, radio):
+        self.radio = radio
+
+    def calcular_area(self):
+        return math.pi * math.pow(self.radio, 2)
+
+    def calcular_circunferencia(self):
+        return 2 * math.pi * self.radio
+
+
+# Bloque principal
+if __name__ == "__main__":
+    r = float(input("Ingrese el radio del círculo: "))
+
+    circulo = Circulo(r)
+
+    print(f"El área del círculo es: {circulo.calcular_area():.2f}")
+    print(f"La longitud de la circunferencia es: {circulo.calcular_circunferencia():.2f}")
