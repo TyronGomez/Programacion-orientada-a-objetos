@@ -1,0 +1,325 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from tkinter.scrolledtext import ScrolledText
+
+
+# ================== CLASE PROGRAMADOR ==================
+class Programador:
+
+    def __init__(self, nombre, apellidos):
+        self._nombre = nombre
+        self._apellidos = apellidos
+
+    def mostrar_datos(self):
+        return f"{self._nombre} {self._apellidos}"
+
+
+# ================== CLASE EQUIPO ==================
+class EquipoMaratonProgramacion:
+
+    def __init__(self, nombre_equipo, universidad, lenguaje_programacion):
+        self._nombre_equipo = nombre_equipo
+        self._universidad = universidad
+        self._lenguaje_programacion = lenguaje_programacion
+        self._programadores = []
+        self._tamano_maximo = 3
+
+    # ================== VALIDAR SI ESTÁ LLENO ==================
+    def esta_lleno(self):
+        return len(self._programadores) >= self._tamano_maximo
+
+    # ================== VALIDAR SI PUEDE COMPETIR ==================
+    def equipo_valido(self):
+        return len(self._programadores) >= 2
+
+    # ================== AÑADIR PROGRAMADOR ==================
+    def anadir_programador(self, programador):
+
+        if self.esta_lleno():
+            raise Exception(
+                "El equipo está completo. No se pudo agregar programador."
+            )
+
+        self._programadores.append(programador)
+
+    # ================== VALIDAR CAMPOS ==================
+    @staticmethod
+    def validar_campo(campo):
+
+        # Campo vacío
+        if not campo.strip():
+            raise ValueError(
+                "El campo no puede estar vacío."
+            )
+
+        # Longitud máxima
+        if len(campo) > 20:
+            raise ValueError(
+                "La longitud no debe ser superior a 20 caracteres."
+            )
+
+        # No permitir números
+        for caracter in campo:
+            if caracter.isdigit():
+                raise ValueError(
+                    "El campo no puede contener dígitos."
+                )
+
+    # ================== MOSTRAR EQUIPO ==================
+    def mostrar_equipo(self):
+
+        datos = (
+            f"Equipo: {self._nombre_equipo}\n"
+            f"Universidad: {self._universidad}\n"
+            f"Lenguaje: {self._lenguaje_programacion}\n"
+            f"Integrantes ({len(self._programadores)}/{self._tamano_maximo}):\n"
+        )
+
+        for i, programador in enumerate(self._programadores, start=1):
+            datos += f"{i}. {programador.mostrar_datos()}\n"
+
+        if self.equipo_valido():
+            datos += "\nEstado: Equipo habilitado para competir."
+        else:
+            datos += "\nEstado: Faltan integrantes (mínimo 2)."
+
+        return datos
+
+
+# ================== GUI ==================
+class VentanaEquipo:
+
+    def __init__(self):
+        self.equipo = None
+
+        self.ventana = tk.Tk()
+        self.ventana.title("Equipo Maratón de Programación")
+        self.ventana.geometry("700x750")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # ================== TÍTULO ==================
+        ttk.Label(
+            self.ventana,
+            text="💻 Registro Equipo Maratón de Programación",
+            font=("Arial", 16)
+        ).pack(pady=15)
+
+        # ================== DATOS DEL EQUIPO ==================
+        frame_equipo = ttk.LabelFrame(
+            self.ventana,
+            text="Datos del Equipo"
+        )
+        frame_equipo.pack(padx=15, pady=10, fill="x")
+
+        ttk.Label(frame_equipo, text="Nombre del equipo:").grid(
+            row=0, column=0, padx=10, pady=5, sticky="w"
+        )
+        self.entry_equipo = ttk.Entry(frame_equipo, width=30)
+        self.entry_equipo.grid(row=0, column=1)
+
+        ttk.Label(frame_equipo, text="Universidad:").grid(
+            row=1, column=0, padx=10, pady=5, sticky="w"
+        )
+        self.entry_universidad = ttk.Entry(frame_equipo, width=30)
+        self.entry_universidad.grid(row=1, column=1)
+
+        ttk.Label(frame_equipo, text="Lenguaje:").grid(
+            row=2, column=0, padx=10, pady=5, sticky="w"
+        )
+        self.entry_lenguaje = ttk.Entry(frame_equipo, width=30)
+        self.entry_lenguaje.grid(row=2, column=1)
+
+        ttk.Button(
+            frame_equipo,
+            text="Crear Equipo",
+            command=self.crear_equipo
+        ).grid(row=3, column=0, columnspan=2, pady=10)
+
+        # ================== DATOS PROGRAMADOR ==================
+        frame_programador = ttk.LabelFrame(
+            self.ventana,
+            text="Agregar Programador"
+        )
+        frame_programador.pack(padx=15, pady=10, fill="x")
+
+        ttk.Label(frame_programador, text="Nombre:").grid(
+            row=0, column=0, padx=10, pady=5, sticky="w"
+        )
+        self.entry_nombre = ttk.Entry(frame_programador, width=30)
+        self.entry_nombre.grid(row=0, column=1)
+
+        ttk.Label(frame_programador, text="Apellidos:").grid(
+            row=1, column=0, padx=10, pady=5, sticky="w"
+        )
+        self.entry_apellidos = ttk.Entry(frame_programador, width=30)
+        self.entry_apellidos.grid(row=1, column=1)
+
+        # ================== BOTONES ==================
+        frame_botones = ttk.Frame(self.ventana)
+        frame_botones.pack(pady=15)
+
+        ttk.Button(
+            frame_botones,
+            text="Añadir Programador",
+            command=self.anadir_programador
+        ).grid(row=0, column=0, padx=10)
+
+        ttk.Button(
+            frame_botones,
+            text="Mostrar Equipo",
+            command=self.mostrar_equipo
+        ).grid(row=0, column=1, padx=10)
+
+        ttk.Button(
+            frame_botones,
+            text="Limpiar",
+            command=self.limpiar
+        ).grid(row=0, column=2, padx=10)
+
+        # ================== RESULTADO ==================
+        self.lbl_estado = ttk.Label(
+            self.ventana,
+            text="Cree un equipo para comenzar.",
+            font=("Arial", 10)
+        )
+        self.lbl_estado.pack(pady=10)
+
+        # ================== HISTORIAL ==================
+        ttk.Label(
+            self.ventana,
+            text="📋 Historial del equipo:"
+        ).pack()
+
+        self.historial = ScrolledText(
+            self.ventana,
+            width=70,
+            height=18
+        )
+        self.historial.pack(pady=10)
+
+        self.ventana.mainloop()
+
+    # ================== CREAR EQUIPO ==================
+    def crear_equipo(self):
+
+        try:
+            nombre = self.entry_equipo.get()
+            universidad = self.entry_universidad.get()
+            lenguaje = self.entry_lenguaje.get()
+
+            EquipoMaratonProgramacion.validar_campo(nombre)
+            EquipoMaratonProgramacion.validar_campo(universidad)
+            EquipoMaratonProgramacion.validar_campo(lenguaje)
+
+            self.equipo = EquipoMaratonProgramacion(
+                nombre,
+                universidad,
+                lenguaje
+            )
+
+            self.lbl_estado.config(
+                text="Equipo creado correctamente."
+            )
+
+            messagebox.showinfo(
+                "Equipo Creado",
+                f"El equipo '{nombre}' fue creado exitosamente."
+            )
+
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
+
+    # ================== AÑADIR PROGRAMADOR ==================
+    def anadir_programador(self):
+
+        try:
+            if not self.equipo:
+                raise Exception(
+                    "Primero debe crear el equipo."
+                )
+
+            nombre = self.entry_nombre.get()
+            apellidos = self.entry_apellidos.get()
+
+            EquipoMaratonProgramacion.validar_campo(nombre)
+            EquipoMaratonProgramacion.validar_campo(apellidos)
+
+            programador = Programador(nombre, apellidos)
+
+            self.equipo.anadir_programador(programador)
+
+            self.historial.insert(
+                tk.END,
+                f"✔ Programador agregado: {programador.mostrar_datos()}\n"
+            )
+
+            messagebox.showinfo(
+                "Registro exitoso",
+                f"Se agregó a {programador.mostrar_datos()}"
+            )
+
+            self.entry_nombre.delete(0, tk.END)
+            self.entry_apellidos.delete(0, tk.END)
+
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    # ================== MOSTRAR EQUIPO ==================
+    def mostrar_equipo(self):
+
+        try:
+            if not self.equipo:
+                raise Exception(
+                    "No existe un equipo creado."
+                )
+
+            informacion = self.equipo.mostrar_equipo()
+
+            self.historial.insert(
+                tk.END,
+                "\n========== RESUMEN DEL EQUIPO ==========\n"
+            )
+
+            self.historial.insert(
+                tk.END,
+                informacion + "\n"
+            )
+
+            messagebox.showinfo(
+                "Equipo Registrado",
+                informacion
+            )
+
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    # ================== LIMPIAR ==================
+    def limpiar(self):
+
+        # Limpiar entradas
+        self.entry_equipo.delete(0, tk.END)
+        self.entry_universidad.delete(0, tk.END)
+        self.entry_lenguaje.delete(0, tk.END)
+
+        self.entry_nombre.delete(0, tk.END)
+        self.entry_apellidos.delete(0, tk.END)
+
+        # Limpiar historial
+        self.historial.delete(1.0, tk.END)
+
+        # Reiniciar equipo
+        self.equipo = None
+
+        self.lbl_estado.config(
+            text="Cree un equipo para comenzar."
+        )
+
+        self.entry_equipo.focus()
+
+
+# ================== MAIN ==================
+if __name__ == "__main__":
+    VentanaEquipo()
