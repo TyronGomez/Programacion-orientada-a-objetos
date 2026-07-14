@@ -1,0 +1,307 @@
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from tkinter.scrolledtext import ScrolledText
+import os
+
+
+# ================== CLASE BASE ==================
+class ArchivoBase:
+    """
+    Clase base para manejo general de archivos
+    """
+
+    def __init__(self, ruta_archivo):
+        self._ruta_archivo = ruta_archivo
+
+    def existe_archivo(self):
+        return os.path.exists(self._ruta_archivo)
+
+
+# ================== CLASE LECTORA ==================
+class LeerArchivo(ArchivoBase):
+    """
+    Clase que hereda de ArchivoBase y permite leer archivos .txt
+    """
+
+    def leer_contenido(self):
+        if not self.existe_archivo():
+            raise FileNotFoundError(
+                "El archivo no existe en la ruta especificada."
+            )
+
+        if not self._ruta_archivo.lower().endswith(".txt"):
+            raise ValueError(
+                "Solo se permiten archivos con extensión .txt"
+            )
+
+        contenido = []
+
+        try:
+            with open(
+                self._ruta_archivo,
+                "r",
+                encoding="utf-8"
+            ) as archivo:
+
+                for linea in archivo:
+                    contenido.append(linea.rstrip("\n"))
+
+            return contenido
+
+        except PermissionError:
+            raise PermissionError(
+                "No tiene permisos para leer este archivo."
+            )
+
+        except UnicodeDecodeError:
+            raise UnicodeError(
+                "No se pudo decodificar el archivo. Verifique la codificación."
+            )
+
+        except Exception as e:
+            raise Exception(
+                f"No se pudo leer el archivo: {str(e)}"
+            )
+
+
+# ================== CLASE REPORTE ==================
+class ReporteArchivo:
+    """
+    Genera estadísticas del archivo leído
+    """
+
+    @staticmethod
+    def contar_lineas(contenido):
+        return len(contenido)
+
+    @staticmethod
+    def contar_palabras(contenido):
+        total = 0
+        for linea in contenido:
+            total += len(linea.split())
+        return total
+
+    @staticmethod
+    def contar_caracteres(contenido):
+        total = 0
+        for linea in contenido:
+            total += len(linea)
+        return total
+
+
+# ================== GUI ==================
+class VentanaLeerArchivo:
+
+    def __init__(self):
+        self.ruta_archivo = ""
+
+        # Ventana principal
+        self.ventana = tk.Tk()
+        self.ventana.title("📂 Lector Inteligente de Archivos TXT")
+        self.ventana.geometry("850x750")
+
+        # Estilo
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # ================== TÍTULO ==================
+        ttk.Label(
+            self.ventana,
+            text="📘 Sistema de Lectura de Archivos",
+            font=("Arial", 18)
+        ).pack(pady=15)
+
+        # ================== FRAME SUPERIOR ==================
+        frame_superior = ttk.LabelFrame(
+            self.ventana,
+            text="Selección de archivo"
+        )
+        frame_superior.pack(fill="x", padx=15, pady=10)
+
+        self.entry_ruta = ttk.Entry(
+            frame_superior,
+            width=80
+        )
+        self.entry_ruta.grid(
+            row=0,
+            column=0,
+            padx=10,
+            pady=10
+        )
+
+        ttk.Button(
+            frame_superior,
+            text="Buscar",
+            command=self.buscar_archivo
+        ).grid(
+            row=0,
+            column=1,
+            padx=10
+        )
+
+        # ================== BOTONES ==================
+        frame_botones = ttk.Frame(self.ventana)
+        frame_botones.pack(pady=10)
+
+        ttk.Button(
+            frame_botones,
+            text="Leer Archivo",
+            command=self.leer_archivo
+        ).grid(row=0, column=0, padx=10)
+
+        ttk.Button(
+            frame_botones,
+            text="Limpiar",
+            command=self.limpiar
+        ).grid(row=0, column=1, padx=10)
+
+        # ================== CONTENIDO ==================
+        ttk.Label(
+            self.ventana,
+            text="📄 Contenido del archivo:"
+        ).pack()
+
+        self.area_texto = ScrolledText(
+            self.ventana,
+            width=95,
+            height=20
+        )
+        self.area_texto.pack(padx=15, pady=10)
+
+        # ================== REPORTE ==================
+        ttk.Label(
+            self.ventana,
+            text="📊 Reporte del archivo:"
+        ).pack()
+
+        self.lbl_reporte = ttk.Label(
+            self.ventana,
+            text="Líneas: 0 | Palabras: 0 | Caracteres: 0",
+            font=("Arial", 11)
+        )
+        self.lbl_reporte.pack(pady=10)
+
+        # ================== HISTORIAL ==================
+        ttk.Label(
+            self.ventana,
+            text="🕘 Historial de archivos leídos:"
+        ).pack()
+
+        self.historial = ScrolledText(
+            self.ventana,
+            width=95,
+            height=8
+        )
+        self.historial.pack(padx=15, pady=10)
+
+        self.ventana.mainloop()
+
+    # ================== FUNCIONES ==================
+    def buscar_archivo(self):
+        archivo = filedialog.askopenfilename(
+            title="Seleccionar archivo TXT",
+            filetypes=[("Archivos de texto", "*.txt")]
+        )
+
+        if archivo:
+            self.ruta_archivo = archivo
+            self.entry_ruta.delete(0, tk.END)
+            self.entry_ruta.insert(0, archivo)
+
+    def leer_archivo(self):
+        try:
+            self.ruta_archivo = self.entry_ruta.get()
+
+            if not self.ruta_archivo:
+                messagebox.showwarning(
+                    "Advertencia",
+                    "Debe seleccionar o ingresar una ruta."
+                )
+                return
+
+            lector = LeerArchivo(self.ruta_archivo)
+
+            contenido = lector.leer_contenido()
+
+            # Limpiar área antes de mostrar
+            self.area_texto.delete(1.0, tk.END)
+
+            # Mostrar contenido
+            for linea in contenido:
+                self.area_texto.insert(
+                    tk.END,
+                    linea + "\n"
+                )
+
+            # Generar reporte
+            lineas = ReporteArchivo.contar_lineas(contenido)
+            palabras = ReporteArchivo.contar_palabras(contenido)
+            caracteres = ReporteArchivo.contar_caracteres(contenido)
+
+            self.lbl_reporte.config(
+                text=f"Líneas: {lineas} | Palabras: {palabras} | Caracteres: {caracteres}"
+            )
+
+            # Historial
+            nombre_archivo = os.path.basename(self.ruta_archivo)
+
+            self.historial.insert(
+                tk.END,
+                f"Archivo leído: {nombre_archivo} | Líneas: {lineas} | Palabras: {palabras}\n"
+            )
+
+            # Popup éxito
+            messagebox.showinfo(
+                "Lectura Exitosa",
+                f"Archivo leído correctamente:\n{nombre_archivo}"
+            )
+
+        except FileNotFoundError as e:
+            messagebox.showerror(
+                "FileNotFoundError",
+                str(e)
+            )
+
+        except PermissionError as e:
+            messagebox.showerror(
+                "PermissionError",
+                str(e)
+            )
+
+        except ValueError as e:
+            messagebox.showerror(
+                "ValueError",
+                str(e)
+            )
+
+        except UnicodeError as e:
+            messagebox.showerror(
+                "UnicodeError",
+                str(e)
+            )
+
+        except Exception as e:
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
+
+    def limpiar(self):
+        # Limpiar ruta
+        self.entry_ruta.delete(0, tk.END)
+
+        # Limpiar contenido
+        self.area_texto.delete(1.0, tk.END)
+
+        # Reiniciar reporte
+        self.lbl_reporte.config(
+            text="Líneas: 0 | Palabras: 0 | Caracteres: 0"
+        )
+
+        # Cursor
+        self.entry_ruta.focus()
+
+
+# ================== MAIN ==================
+if __name__ == "__main__":
+    VentanaLeerArchivo()
