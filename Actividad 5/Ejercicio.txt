@@ -1,0 +1,961 @@
+# =========================================================
+# AGENDA INTELIGENTE DE CONTACTOS
+# POO + CRUD + TXT + TKINTER
+# =========================================================
+
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+from tkinter.scrolledtext import ScrolledText
+import os
+
+# =========================================================
+# CLASE PERSONA
+# =========================================================
+class Persona:
+
+    def __init__(self, nombre, telefono):
+        self.validar_nombre(nombre)
+        self.validar_telefono(telefono)
+
+        self._nombre = nombre
+        self._telefono = telefono
+
+    # ================= VALIDACIONES =================
+    @staticmethod
+    def validar_nombre(nombre):
+
+        if not nombre.strip():
+            raise ValueError(
+                "El nombre no puede estar vacío."
+            )
+
+        if len(nombre) > 40:
+            raise ValueError(
+                "El nombre no puede superar 40 caracteres."
+            )
+
+        for caracter in nombre:
+            if caracter.isdigit():
+                raise ValueError(
+                    "El nombre no puede contener números."
+                )
+
+    @staticmethod
+    def validar_telefono(telefono):
+
+        telefono = str(telefono)
+
+        if not telefono.isdigit():
+            raise ValueError(
+                "El teléfono solo debe contener números."
+            )
+
+        if len(telefono) != 10:
+            raise ValueError(
+                "El teléfono debe tener 10 dígitos."
+            )
+
+    # ================= GETTERS =================
+    def get_nombre(self):
+        return self._nombre
+
+    def get_telefono(self):
+        return self._telefono
+
+    # ================= MOSTRAR =================
+    def mostrar_datos(self):
+
+        return (
+            f"Nombre: {self._nombre}\n"
+            f"Teléfono: {self._telefono}"
+        )
+
+
+# =========================================================
+# CLASE CONTACTO
+# =========================================================
+class Contacto(Persona):
+
+    CATEGORIAS_VALIDAS = [
+        "Trabajo",
+        "Universidad",
+        "Familia",
+        "Personal"
+    ]
+
+    def __init__(
+        self,
+        nombre,
+        telefono,
+        correo,
+        ciudad,
+        categoria
+    ):
+
+        super().__init__(nombre, telefono)
+
+        self.validar_correo(correo)
+        self.validar_ciudad(ciudad)
+        self.validar_categoria(categoria)
+
+        self._correo = correo
+        self._ciudad = ciudad
+        self._categoria = categoria
+
+    # ================= VALIDACIONES =================
+    @staticmethod
+    def validar_correo(correo):
+
+        if "@" not in correo or "." not in correo:
+            raise ValueError(
+                "Correo electrónico inválido."
+            )
+
+    @staticmethod
+    def validar_ciudad(ciudad):
+
+        if not ciudad.strip():
+            raise ValueError(
+                "La ciudad no puede estar vacía."
+            )
+
+    @staticmethod
+    def validar_categoria(categoria):
+
+        if categoria not in Contacto.CATEGORIAS_VALIDAS:
+            raise ValueError(
+                "Categoría inválida."
+            )
+
+    # ================= GETTERS =================
+    def get_correo(self):
+        return self._correo
+
+    def get_ciudad(self):
+        return self._ciudad
+
+    def get_categoria(self):
+        return self._categoria
+
+    # ================= TXT =================
+    def convertir_a_txt(self):
+
+        return (
+            f"{self._nombre}|"
+            f"{self._telefono}|"
+            f"{self._correo}|"
+            f"{self._ciudad}|"
+            f"{self._categoria}"
+        )
+
+    @classmethod
+    def crear_desde_txt(cls, linea):
+
+        datos = linea.strip().split("|")
+
+        if len(datos) != 5:
+            raise ValueError(
+                "Formato TXT inválido."
+            )
+
+        return cls(
+            datos[0],
+            datos[1],
+            datos[2],
+            datos[3],
+            datos[4]
+        )
+
+    # ================= MOSTRAR =================
+    def mostrar_datos(self):
+
+        return (
+            f"Nombre: {self._nombre}\n"
+            f"Teléfono: {self._telefono}\n"
+            f"Correo: {self._correo}\n"
+            f"Ciudad: {self._ciudad}\n"
+            f"Categoría: {self._categoria}"
+        )
+
+
+# =========================================================
+# CLASE AGENDA
+# =========================================================
+class Agenda:
+
+    def __init__(self, ruta_archivo):
+
+        self._ruta_archivo = ruta_archivo
+
+        if not os.path.exists(self._ruta_archivo):
+
+            with open(
+                self._ruta_archivo,
+                "w",
+                encoding="utf-8"
+            ):
+                pass
+
+    # =====================================================
+    # LEER CONTACTOS
+    # =====================================================
+    def leer_contactos(self):
+
+        contactos = []
+
+        with open(
+            self._ruta_archivo,
+            "r",
+            encoding="utf-8"
+        ) as archivo:
+
+            for linea in archivo:
+
+                if linea.strip():
+
+                    contacto = Contacto.crear_desde_txt(
+                        linea
+                    )
+
+                    contactos.append(contacto)
+
+        return contactos
+
+    # =====================================================
+    # GUARDAR CONTACTOS
+    # =====================================================
+    def guardar_contactos(self, contactos):
+
+        with open(
+            self._ruta_archivo,
+            "w",
+            encoding="utf-8"
+        ) as archivo:
+
+            for contacto in contactos:
+
+                archivo.write(
+                    contacto.convertir_a_txt() + "\n"
+                )
+
+    # =====================================================
+    # AGREGAR CONTACTO
+    # =====================================================
+    def agregar_contacto(self, nuevo_contacto):
+
+        contactos = self.leer_contactos()
+
+        for contacto in contactos:
+
+            if (
+                contacto.get_telefono()
+                ==
+                nuevo_contacto.get_telefono()
+            ):
+
+                raise ValueError(
+                    "Ya existe un contacto con ese teléfono."
+                )
+
+            if (
+                contacto.get_correo().lower()
+                ==
+                nuevo_contacto.get_correo().lower()
+            ):
+
+                raise ValueError(
+                    "Ya existe un contacto con ese correo."
+                )
+
+        contactos.append(nuevo_contacto)
+
+        self.guardar_contactos(contactos)
+
+    # =====================================================
+    # BUSCAR CONTACTO
+    # =====================================================
+    def buscar_contacto(self, telefono):
+
+        contactos = self.leer_contactos()
+
+        for contacto in contactos:
+
+            if contacto.get_telefono() == telefono:
+                return contacto
+
+        return None
+
+    # =====================================================
+    # ELIMINAR CONTACTO
+    # =====================================================
+    def eliminar_contacto(self, telefono):
+
+        contactos = self.leer_contactos()
+
+        nuevos_contactos = []
+
+        eliminado = False
+
+        for contacto in contactos:
+
+            if contacto.get_telefono() != telefono:
+                nuevos_contactos.append(contacto)
+
+            else:
+                eliminado = True
+
+        if not eliminado:
+            raise ValueError(
+                "No se encontró el contacto."
+            )
+
+        self.guardar_contactos(nuevos_contactos)
+
+    # =====================================================
+    # ACTUALIZAR CONTACTO
+    # =====================================================
+    def actualizar_contacto(
+        self,
+        telefono_original,
+        contacto_actualizado
+    ):
+
+        contactos = self.leer_contactos()
+
+        actualizado = False
+
+        for i in range(len(contactos)):
+
+            if (
+                contactos[i].get_telefono()
+                ==
+                telefono_original
+            ):
+
+                contactos[i] = contacto_actualizado
+
+                actualizado = True
+
+                break
+
+        if not actualizado:
+            raise ValueError(
+                "No se encontró el contacto."
+            )
+
+        self.guardar_contactos(contactos)
+
+    # =====================================================
+    # REPORTES
+    # =====================================================
+    def total_contactos(self):
+
+        return len(self.leer_contactos())
+
+    def total_ciudades(self):
+
+        ciudades = set()
+
+        for contacto in self.leer_contactos():
+            ciudades.add(contacto.get_ciudad())
+
+        return len(ciudades)
+
+    def total_categorias(self):
+
+        categorias = set()
+
+        for contacto in self.leer_contactos():
+            categorias.add(contacto.get_categoria())
+
+        return len(categorias)
+
+
+# =========================================================
+# GUI
+# =========================================================
+class VentanaAgenda:
+
+    def __init__(self):
+
+        self.ruta_archivo = ""
+
+        # ================= VENTANA =================
+        self.ventana = tk.Tk()
+
+        self.ventana.title(
+            "📘 Agenda Inteligente de Contactos"
+        )
+
+        self.ventana.geometry("1100x800")
+
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # =================================================
+        # TÍTULO
+        # =================================================
+        ttk.Label(
+            self.ventana,
+            text="📂 Agenda Inteligente",
+            font=("Arial", 20)
+        ).pack(pady=15)
+
+        # =================================================
+        # RUTA ARCHIVO
+        # =================================================
+        frame_ruta = ttk.LabelFrame(
+            self.ventana,
+            text="Archivo TXT"
+        )
+
+        frame_ruta.pack(
+            fill="x",
+            padx=15,
+            pady=10
+        )
+
+        self.entry_ruta = ttk.Entry(
+            frame_ruta,
+            width=90
+        )
+
+        self.entry_ruta.grid(
+            row=0,
+            column=0,
+            padx=10,
+            pady=10
+        )
+
+        ttk.Button(
+            frame_ruta,
+            text="Buscar",
+            command=self.buscar_archivo
+        ).grid(
+            row=0,
+            column=1,
+            padx=10
+        )
+
+        # =================================================
+        # FORMULARIO
+        # =================================================
+        frame_form = ttk.LabelFrame(
+            self.ventana,
+            text="Datos del contacto"
+        )
+
+        frame_form.pack(
+            fill="x",
+            padx=15,
+            pady=10
+        )
+
+        # NOMBRE
+        ttk.Label(
+            frame_form,
+            text="Nombre:"
+        ).grid(row=0, column=0, padx=10, pady=10)
+
+        self.entry_nombre = ttk.Entry(
+            frame_form,
+            width=30
+        )
+
+        self.entry_nombre.grid(row=0, column=1)
+
+        # TELEFONO
+        ttk.Label(
+            frame_form,
+            text="Teléfono:"
+        ).grid(row=0, column=2, padx=10)
+
+        self.entry_telefono = ttk.Entry(
+            frame_form,
+            width=20
+        )
+
+        self.entry_telefono.grid(row=0, column=3)
+
+        # CORREO
+        ttk.Label(
+            frame_form,
+            text="Correo:"
+        ).grid(row=1, column=0, padx=10)
+
+        self.entry_correo = ttk.Entry(
+            frame_form,
+            width=30
+        )
+
+        self.entry_correo.grid(row=1, column=1)
+
+        # CIUDAD
+        ttk.Label(
+            frame_form,
+            text="Ciudad:"
+        ).grid(row=1, column=2)
+
+        self.entry_ciudad = ttk.Entry(
+            frame_form,
+            width=20
+        )
+
+        self.entry_ciudad.grid(row=1, column=3)
+
+        # CATEGORIA
+        ttk.Label(
+            frame_form,
+            text="Categoría:"
+        ).grid(row=2, column=0, pady=10)
+
+        self.combo_categoria = ttk.Combobox(
+            frame_form,
+            values=Contacto.CATEGORIAS_VALIDAS,
+            state="readonly",
+            width=27
+        )
+
+        self.combo_categoria.grid(row=2, column=1)
+
+        # =================================================
+        # BOTONES
+        # =================================================
+        frame_botones = ttk.Frame(self.ventana)
+
+        frame_botones.pack(pady=15)
+
+        ttk.Button(
+            frame_botones,
+            text="Agregar",
+            command=self.agregar_contacto
+        ).grid(row=0, column=0, padx=8)
+
+        ttk.Button(
+            frame_botones,
+            text="Buscar",
+            command=self.buscar_contacto
+        ).grid(row=0, column=1, padx=8)
+
+        ttk.Button(
+            frame_botones,
+            text="Actualizar",
+            command=self.actualizar_contacto
+        ).grid(row=0, column=2, padx=8)
+
+        ttk.Button(
+            frame_botones,
+            text="Eliminar",
+            command=self.eliminar_contacto
+        ).grid(row=0, column=3, padx=8)
+
+        ttk.Button(
+            frame_botones,
+            text="Mostrar Todos",
+            command=self.mostrar_contactos
+        ).grid(row=0, column=4, padx=8)
+
+        ttk.Button(
+            frame_botones,
+            text="Limpiar",
+            command=self.limpiar
+        ).grid(row=0, column=5, padx=8)
+
+        # =================================================
+        # TABLA
+        # =================================================
+        ttk.Label(
+            self.ventana,
+            text="📋 Lista de contactos"
+        ).pack()
+
+        columnas = (
+            "Nombre",
+            "Telefono",
+            "Correo",
+            "Ciudad",
+            "Categoria"
+        )
+
+        self.tabla = ttk.Treeview(
+            self.ventana,
+            columns=columnas,
+            show="headings",
+            height=5
+        )
+
+        for col in columnas:
+
+            self.tabla.heading(col, text=col)
+
+            self.tabla.column(
+                col,
+                width=180
+            )
+
+        self.tabla.pack(
+            padx=15,
+            pady=10,
+            fill="x"
+        )
+
+        # DOBLE CLICK
+        self.tabla.bind(
+            "<Double-1>",
+            self.cargar_desde_tabla
+        )
+
+        # =================================================
+        # REPORTE
+        # =================================================
+        self.lbl_reporte = ttk.Label(
+            self.ventana,
+            text=(
+                "Total contactos: 0 | "
+                "Ciudades: 0 | "
+                "Categorías: 0"
+            ),
+            font=("Arial", 11)
+        )
+
+        self.lbl_reporte.pack(pady=10)
+
+        # =================================================
+        # HISTORIAL
+        # =================================================
+        ttk.Label(
+            self.ventana,
+            text="🕘 Historial"
+        ).pack()
+
+        self.historial = ScrolledText(
+            self.ventana,
+            width=120,
+            height=8
+        )
+
+        self.historial.pack(
+            padx=15,
+            pady=10
+        )
+
+        self.ventana.mainloop()
+
+    # =====================================================
+    # BUSCAR ARCHIVO
+    # =====================================================
+    def buscar_archivo(self):
+
+        archivo = filedialog.askopenfilename(
+            title="Seleccionar TXT",
+            filetypes=[("Archivos TXT", "*.txt")]
+        )
+
+        if archivo:
+
+            self.ruta_archivo = archivo
+
+            self.entry_ruta.delete(0, tk.END)
+
+            self.entry_ruta.insert(
+                0,
+                archivo
+            )
+
+    # =====================================================
+    # OBTENER AGENDA
+    # =====================================================
+    def obtener_agenda(self):
+
+        ruta = self.entry_ruta.get()
+
+        if not ruta:
+
+            raise ValueError(
+                "Debe seleccionar un archivo TXT."
+            )
+
+        return Agenda(ruta)
+
+    # =====================================================
+    # AGREGAR
+    # =====================================================
+    def agregar_contacto(self):
+
+        try:
+
+            agenda = self.obtener_agenda()
+
+            contacto = Contacto(
+                self.entry_nombre.get(),
+                self.entry_telefono.get(),
+                self.entry_correo.get(),
+                self.entry_ciudad.get(),
+                self.combo_categoria.get()
+            )
+
+            agenda.agregar_contacto(contacto)
+
+            self.mostrar_contactos()
+
+            self.historial.insert(
+                tk.END,
+                f"✅ Contacto agregado: "
+                f"{contacto.get_nombre()}\n"
+            )
+
+            messagebox.showinfo(
+                "Éxito",
+                "Contacto agregado correctamente."
+            )
+
+            self.limpiar()
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
+
+    # =====================================================
+    # MOSTRAR
+    # =====================================================
+    def mostrar_contactos(self):
+
+        try:
+
+            agenda = self.obtener_agenda()
+
+            contactos = agenda.leer_contactos()
+
+            # LIMPIAR TABLA
+            for item in self.tabla.get_children():
+                self.tabla.delete(item)
+
+            # INSERTAR DATOS
+            for contacto in contactos:
+
+                self.tabla.insert(
+                    "",
+                    tk.END,
+                    values=(
+                        contacto.get_nombre(),
+                        contacto.get_telefono(),
+                        contacto.get_correo(),
+                        contacto.get_ciudad(),
+                        contacto.get_categoria()
+                    )
+                )
+
+            self.actualizar_reporte()
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
+
+    # =====================================================
+    # BUSCAR CONTACTO
+    # =====================================================
+    def buscar_contacto(self):
+
+        try:
+
+            agenda = self.obtener_agenda()
+
+            telefono = self.entry_telefono.get()
+
+            contacto = agenda.buscar_contacto(
+                telefono
+            )
+
+            if contacto is None:
+
+                messagebox.showwarning(
+                    "Búsqueda",
+                    "Contacto no encontrado."
+                )
+
+                return
+
+            self.entry_nombre.delete(0, tk.END)
+            self.entry_nombre.insert(
+                0,
+                contacto.get_nombre()
+            )
+
+            self.entry_correo.delete(0, tk.END)
+            self.entry_correo.insert(
+                0,
+                contacto.get_correo()
+            )
+
+            self.entry_ciudad.delete(0, tk.END)
+            self.entry_ciudad.insert(
+                0,
+                contacto.get_ciudad()
+            )
+
+            self.combo_categoria.set(
+                contacto.get_categoria()
+            )
+
+            messagebox.showinfo(
+                "Contacto encontrado",
+                contacto.mostrar_datos()
+            )
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
+
+    # =====================================================
+    # ELIMINAR
+    # =====================================================
+    def eliminar_contacto(self):
+
+        try:
+
+            agenda = self.obtener_agenda()
+
+            telefono = self.entry_telefono.get()
+
+            agenda.eliminar_contacto(telefono)
+
+            self.mostrar_contactos()
+
+            self.historial.insert(
+                tk.END,
+                f"❌ Contacto eliminado: "
+                f"{telefono}\n"
+            )
+
+            messagebox.showinfo(
+                "Eliminado",
+                "Contacto eliminado correctamente."
+            )
+
+            self.limpiar()
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
+
+    # =====================================================
+    # ACTUALIZAR
+    # =====================================================
+    def actualizar_contacto(self):
+
+        try:
+
+            agenda = self.obtener_agenda()
+
+            telefono_original = self.entry_telefono.get()
+
+            contacto_actualizado = Contacto(
+                self.entry_nombre.get(),
+                self.entry_telefono.get(),
+                self.entry_correo.get(),
+                self.entry_ciudad.get(),
+                self.combo_categoria.get()
+            )
+
+            agenda.actualizar_contacto(
+                telefono_original,
+                contacto_actualizado
+            )
+
+            self.mostrar_contactos()
+
+            self.historial.insert(
+                tk.END,
+                f"🔄 Contacto actualizado: "
+                f"{contacto_actualizado.get_nombre()}\n"
+            )
+
+            messagebox.showinfo(
+                "Actualizado",
+                "Contacto actualizado correctamente."
+            )
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
+
+    # =====================================================
+    # CARGAR DESDE TABLA
+    # =====================================================
+    def cargar_desde_tabla(self, event):
+
+        seleccionado = self.tabla.selection()
+
+        if not seleccionado:
+            return
+
+        valores = self.tabla.item(
+            seleccionado[0],
+            "values"
+        )
+
+        self.limpiar()
+
+        self.entry_nombre.insert(0, valores[0])
+        self.entry_telefono.insert(0, valores[1])
+        self.entry_correo.insert(0, valores[2])
+        self.entry_ciudad.insert(0, valores[3])
+
+        self.combo_categoria.set(valores[4])
+
+    # =====================================================
+    # REPORTE
+    # =====================================================
+    def actualizar_reporte(self):
+
+        agenda = self.obtener_agenda()
+
+        self.lbl_reporte.config(
+
+            text=(
+                f"Total contactos: "
+                f"{agenda.total_contactos()} | "
+                f"Ciudades: "
+                f"{agenda.total_ciudades()} | "
+                f"Categorías: "
+                f"{agenda.total_categorias()}"
+            )
+        )
+
+    # =====================================================
+    # LIMPIAR
+    # =====================================================
+    def limpiar(self):
+
+        self.entry_nombre.delete(0, tk.END)
+
+        self.entry_telefono.delete(0, tk.END)
+
+        self.entry_correo.delete(0, tk.END)
+
+        self.entry_ciudad.delete(0, tk.END)
+
+        self.combo_categoria.set("")
+
+
+# =========================================================
+# MAIN
+# =========================================================
+if __name__ == "__main__":
+
+    VentanaAgenda()
