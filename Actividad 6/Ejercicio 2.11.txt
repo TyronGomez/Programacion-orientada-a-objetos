@@ -1,0 +1,146 @@
+# ==========================================
+# CLASE ARTICULO CIENTIFICO
+# Ejercicio 2.11
+# Sobrecarga de Constructores
+# ==========================================
+
+class ArticuloCientifico:
+
+    # --------------------------------------
+    # Constructor principal
+    # --------------------------------------
+
+    def __init__(
+        self,
+        titulo,
+        autor,
+        palabras_clave=None,
+        publicacion="",
+        anio=0,
+        resumen=""
+    ):
+
+        self.titulo = titulo
+        self.autor = autor
+        self.palabras_clave = palabras_clave or []
+        self.publicacion = publicacion
+        self.anio = anio
+        self.resumen = resumen
+
+    # --------------------------------------
+    # Constructor 1
+    # Título + Autor
+    # --------------------------------------
+
+    @classmethod
+    def desde_titulo_autor(
+        cls,
+        titulo,
+        autor
+    ):
+        return cls(
+            titulo,
+            autor
+        )
+
+    # --------------------------------------
+    # Constructor 2
+    # Invoca al constructor 1
+    # --------------------------------------
+
+    @classmethod
+    def desde_datos_basicos(
+        cls,
+        titulo,
+        autor,
+        palabras_clave,
+        publicacion,
+        anio
+    ):
+
+        articulo = cls.desde_titulo_autor(
+            titulo,
+            autor
+        )
+
+        articulo.palabras_clave = palabras_clave
+        articulo.publicacion = publicacion
+        articulo.anio = anio
+
+        return articulo
+
+    # --------------------------------------
+    # Constructor 3
+    # Invoca al constructor 2
+    # --------------------------------------
+
+    @classmethod
+    def desde_datos_completos(
+        cls,
+        titulo,
+        autor,
+        palabras_clave,
+        publicacion,
+        anio,
+        resumen
+    ):
+
+        articulo = cls.desde_datos_basicos(
+            titulo,
+            autor,
+            palabras_clave,
+            publicacion,
+            anio
+        )
+
+        articulo.resumen = resumen
+
+        return articulo
+
+    # --------------------------------------
+    # Método imprimir
+    # --------------------------------------
+
+    def imprimir(self):
+
+        print("\n" + "=" * 50)
+        print("ARTÍCULO CIENTÍFICO")
+        print("=" * 50)
+
+        print(f"Título      : {self.titulo}")
+        print(f"Autor       : {self.autor}")
+
+        print("\nPalabras clave:")
+
+        for palabra in self.palabras_clave:
+            print(f"  • {palabra}")
+
+        print(f"\nPublicación : {self.publicacion}")
+        print(f"Año         : {self.anio}")
+
+        print("\nResumen:")
+        print(self.resumen)
+
+
+# ==========================================
+# MAIN
+# ==========================================
+
+if __name__ == "__main__":
+
+    palabras = [
+        "Física",
+        "Espacio",
+        "Tiempo"
+    ]
+
+    articulo = ArticuloCientifico.desde_datos_completos(
+        "La teoría especial de la relatividad",
+        "Albert Einstein",
+        palabras,
+        "Anales de Física",
+        1913,
+        "Las leyes de la física son las mismas en todos los sistemas de referencia inerciales."
+    )
+
+    articulo.imprimir()
