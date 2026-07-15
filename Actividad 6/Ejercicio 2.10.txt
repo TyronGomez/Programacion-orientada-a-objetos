@@ -1,0 +1,138 @@
+# ==========================================
+# CLASE PEDIDO
+# Ejercicio 2.10 - Sobrecarga de Métodos
+# ==========================================
+
+class Pedido:
+
+    def calcular_pedido(self, *args):
+
+        # ==================================
+        # Pedido:
+        # Primer plato + Bebida
+        # ==================================
+        if len(args) == 4:
+
+            primer_plato = args[0]
+            costo_primer = args[1]
+
+            bebida = args[2]
+            costo_bebida = args[3]
+
+            total = costo_primer + costo_bebida
+
+            print("\n===== PEDIDO 1 =====")
+            print(f"Primer plato : {primer_plato}")
+            print(f"Bebida       : {bebida}")
+            print(f"Total        : ${total:,.0f}")
+
+        # ==================================
+        # Pedido:
+        # Primer plato + Segundo plato + Bebida
+        # ==================================
+        elif len(args) == 6:
+
+            primer_plato = args[0]
+            costo_primer = args[1]
+
+            segundo_plato = args[2]
+            costo_segundo = args[3]
+
+            bebida = args[4]
+            costo_bebida = args[5]
+
+            total = (
+                costo_primer
+                + costo_segundo
+                + costo_bebida
+            )
+
+            print("\n===== PEDIDO 2 =====")
+            print(f"Primer plato : {primer_plato}")
+            print(f"Segundo plato: {segundo_plato}")
+            print(f"Bebida       : {bebida}")
+            print(f"Total        : ${total:,.0f}")
+
+        # ==================================
+        # Pedido:
+        # Primer plato + Segundo plato + Postre + Bebida
+        # ==================================
+        elif len(args) == 8:
+
+            primer_plato = args[0]
+            costo_primer = args[1]
+
+            segundo_plato = args[2]
+            costo_segundo = args[3]
+
+            postre = args[4]
+            costo_postre = args[5]
+
+            bebida = args[6]
+            costo_bebida = args[7]
+
+            total = (
+                costo_primer
+                + costo_segundo
+                + costo_postre
+                + costo_bebida
+            )
+
+            print("\n===== PEDIDO 3 =====")
+            print(f"Primer plato : {primer_plato}")
+            print(f"Segundo plato: {segundo_plato}")
+            print(f"Postre       : {postre}")
+            print(f"Bebida       : {bebida}")
+            print(f"Total        : ${total:,.0f}")
+
+        else:
+            raise ValueError(
+                "Cantidad de parámetros no válida."
+            )
+
+
+if __name__ == "__main__":
+
+    pedido = Pedido()
+
+    # --------------------------------------
+    # Pedido 1
+    # Primer plato + Bebida
+    # --------------------------------------
+
+    pedido.calcular_pedido(
+        "Sancocho",
+        5000,
+        "Gaseosa",
+        2000
+    )
+
+    # --------------------------------------
+    # Pedido 2
+    # Primer plato + Segundo plato + Bebida
+    # --------------------------------------
+
+    pedido.calcular_pedido(
+        "Crema de verduras",
+        5000,
+        "Churrasco",
+        6000,
+        "Gaseosa",
+        2000
+    )
+
+    # --------------------------------------
+    # Pedido 3
+    # Primer plato + Segundo plato + Postre + Bebida
+    # --------------------------------------
+
+    pedido.calcular_pedido(
+        "Crema de espinacas",
+        5000,
+        "Salmón",
+        10000,
+        "Tiramisú",
+        5000,
+        "Gaseosa",
+        2000
+    )
